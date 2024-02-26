@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     require: true,
   },
+  rating: {
+    type: Number,
+    require: true,
+  },
   roll: {
     type: Number,
     require: true,
@@ -42,40 +46,74 @@ const userSchema = new mongoose.Schema({
 // create user model
 const userModel = mongoose.model("userDatabase", userSchema);
 
-// get user data 
-app.get("/user", async (req, res)=>{
-    try {
-        const userData = await userModel.find();
-        res.status(200).send(userData)
-    } catch (error) {
-        res.status(500).send({message : error.message})
+// get all user data
+app.get("/user", async (req, res) => {
+  try {
+    const roll = req.query.roll;
+    const rating = req.query.rating;
+    let userData;
+    if (roll && rating) {
+      // userData = await userModel.find({roll : {$gte:roll}});
+      userData = await userModel.find({
+        $nor: [{ roll: { $eq: roll } }, { rating: { $eq: rating } }],
+      }).sort({roll:-1});
+    } else {
+      userData = await userModel.find().sort({roll:-1}).select({roll:0});
     }
-})
 
-// get single user data 
-app.get("/user/:id", async (req, res)=>{
-    try {
-        const id = req.params.id;
-        
-        const userData = await userModel.findOne({_id:id});
-        res.status(200).send(userData)
-    } catch (error) {
-        res.status(500).send({message : error.message})
+    if (userData) {
+      res.status(200).send({
+        success: true,
+        message: "return all users",
+        data: userData,
+      });
+    } else {
+      res.status(404).send({
+        success: false,
+        message: "user is not found",
+      });
     }
-})
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+});
+
+// get single user data
+app.get("/user/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const userData = await userModel.findOne({ _id: id });
+    if (userData) {
+      res.status(200).send({
+        message: "return single product",
+        success: true,
+        data: userData,
+      });
+    } else {
+      res.status(404).send({
+        message: "This user is not found",
+      });
+    }
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+});
 
 // post user data
 app.post("/user", async (req, res) => {
   try {
-        const name = req.body.name;
-        const email = req.body.email;
-        const roll = req.body.roll;
-        const newUser = new userModel({
-            name : name,
-            email : email,
-            roll : roll
-        });
-       const userData = await newUser.save();
+    const name = req.body.name;
+    const email = req.body.email;
+    const rating = req.body.rating;
+    const roll = req.body.roll;
+    const newUser = new userModel({
+      name: name,
+      email: email,
+      rating: rating,
+      roll: roll,
+    });
+    const userData = await newUser.save();
     // const userData = await userModel.insertMany([
     //   {
     //     name: "dalim",
