@@ -23,19 +23,31 @@ const connectDB = async () => {
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    require: true,
+    required: [true, "name is required"],
+    minLength : [3, "mimimum length of character of 3"],
+    maxLength : [100, "maximum length of character fo 10"],
+    // lowercase : true,
+    // uppercase : true,
+    trim : true,
+    enum : {
+      values : ["kona","kongkon"],
+      message : `{VALUE} is not supported`
+    }
   },
   email: {
     type: String,
-    require: true,
+    required: true,
+    unique : true
   },
   rating: {
     type: Number,
-    require: true,
+    required: true,
   },
   roll: {
     type: Number,
-    require: true,
+    required: [true, "roll is required"],
+    min : [400000, "minimum roll is 6 digit"] ,
+    max : [600000, "maximum roll is 6 digit"]
   },
   createOn: {
     type: Date,
