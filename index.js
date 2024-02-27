@@ -54,11 +54,13 @@ app.get("/user", async (req, res) => {
     let userData;
     if (roll && rating) {
       // userData = await userModel.find({roll : {$gte:roll}});
-      userData = await userModel.find({
-        $nor: [{ roll: { $eq: roll } }, { rating: { $eq: rating } }],
-      }).sort({roll:-1});
+      userData = await userModel
+        .find({
+          $nor: [{ roll: { $eq: roll } }, { rating: { $eq: rating } }],
+        })
+        .sort({ roll: -1 });
     } else {
-      userData = await userModel.find().sort({roll:-1}).select({roll:0});
+      userData = await userModel.find().sort({ roll: -1 }).select({ roll: 0 });
     }
 
     if (userData) {
@@ -132,6 +134,23 @@ app.post("/user", async (req, res) => {
     //   }
     // ]);
     res.status(202).send(userData);
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+});
+
+// delete single ussr
+app.delete("/user/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userData = await userModel.findByIdAndDelete({ _id: id });
+    if (userData) {
+      res
+        .status(200)
+        .send({ message: "this user was deleted", data: userData , success : true});
+    } else {
+      res.status(404).send({ message: "This id is not found" , success : false });
+    }
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
