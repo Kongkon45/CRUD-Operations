@@ -139,6 +139,40 @@ app.post("/user", async (req, res) => {
   }
 });
 
+// update user data
+app.put("/user/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const name = req.body.name;
+    const email = req.body.email;
+    const rating = req.body.rating;
+    const roll = req.body.roll;
+    const userData = await userModel.findByIdAndUpdate(
+      { _id: id },
+      {
+        $set: {
+           name: name,
+           email: email,
+           rating: rating,
+           roll : roll
+          },
+      },
+      { new: true }
+    );
+    if (userData) {
+      res
+        .status(200)
+        .send({ success: true, message: "this user is updated", userData });
+    } else {
+      res
+        .status(404)
+        .send({ success: false, message: "this user is not found" });
+    }
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+});
+
 // delete single ussr
 app.delete("/user/:id", async (req, res) => {
   try {
@@ -147,9 +181,13 @@ app.delete("/user/:id", async (req, res) => {
     if (userData) {
       res
         .status(200)
-        .send({ message: "this user was deleted", data: userData , success : true});
+        .send({
+          message: "this user was deleted",
+          data: userData,
+          success: true,
+        });
     } else {
-      res.status(404).send({ message: "This id is not found" , success : false });
+      res.status(404).send({ message: "This id is not found", success: false });
     }
   } catch (error) {
     res.status(500).send({ message: error.message });
